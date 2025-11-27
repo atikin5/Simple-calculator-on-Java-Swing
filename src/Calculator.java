@@ -44,7 +44,7 @@ public class Calculator extends JFrame{
     private JButton eButton;
     private boolean exception = false;
 
-    private final List<Character> symbols = Arrays.asList('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '+', '-', '*', '/', '!');
+    private final List<Character> symbols = Arrays.asList('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '+', '-', '*', '/', '^', '!', '(', ')');
 
     public Calculator() {
         setTitle("Calculator");
@@ -79,106 +79,10 @@ public class Calculator extends JFrame{
         resultButton.addKeyListener(keyListener);
         dotButton.addKeyListener(keyListener);
 
-        d0Button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                click("0");
-            }
-        });
-        d1Button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                click("1");
-            }
-        });
-        d2Button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                click("2");
-            }
-        });
-        d3Button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                click("3");
-            }
-        });
-        d4Button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                click("4");
-            }
-        });
-        d5Button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                click("5");
-            }
-        });
-        d6Button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                click("6");
-            }
-        });
-        d7Button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                click("7");
-            }
-        });
-        d8Button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                click("8");
-            }
-        });
-        d9Button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                click("9");
-            }
-        });
         bSButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 bS();
-            }
-        });
-        openBraceButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                click("(");
-            }
-        });
-        closeBraceButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                click(")");
-            }
-        });
-        divButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                click("/");
-            }
-        });
-        mulButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                click("*");
-            }
-        });
-        plusButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                click("+");
-            }
-        });
-        minusButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                click("-");
             }
         });
         cButton.addActionListener(new ActionListener() {
@@ -205,14 +109,11 @@ public class Calculator extends JFrame{
 
     private void operate() {
         try {
-            System.out.println(textField1.getText());
             String res = calc.calculate(textField1.getText());
-            System.out.println(res);
             textField1.setText(res);
         } catch (Exception e1) {
             exception = true;
             textField1.setText(e1.getMessage());
-            System.out.println(e1.getMessage());
         }
     }
 
@@ -298,5 +199,51 @@ public class Calculator extends JFrame{
 
     };
 
+    private class JMyButton extends JButton {
+        public JMyButton() {
+            super();
+            this.addKeyListener(keyListener);
+        }
+    }
 
+    private class JSymbolsButton extends JMyButton {
+        public JSymbolsButton(String symbols) {
+            super();
+            this.addKeyListener(keyListener);
+            this.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    click(symbols);
+                }
+            });
+        }
+    }
+
+    private void createUIComponents() {
+        openBraceButton = new JSymbolsButton("(");
+        closeBraceButton = new JSymbolsButton(")");
+        d0Button = new JSymbolsButton("0");
+        d1Button = new JSymbolsButton("1");
+        d2Button = new JSymbolsButton("2");
+        d3Button = new JSymbolsButton("3");
+        d4Button = new JSymbolsButton("4");
+        d5Button = new JSymbolsButton("5");
+        d6Button = new JSymbolsButton("6");
+        d7Button = new JSymbolsButton("7");
+        d8Button = new JSymbolsButton("8");
+        d9Button = new JSymbolsButton("9");
+        dotButton = new JSymbolsButton(".");
+        divButton = new JSymbolsButton("/");
+        mulButton = new JSymbolsButton("*");
+        plusButton = new JSymbolsButton("+");
+        minusButton = new JSymbolsButton("-");
+        powButton = new JSymbolsButton("^");
+        factorButton = new JSymbolsButton("!");
+        eButton = new JSymbolsButton("");
+        piButton = new JSymbolsButton("");
+        cButton = new JMyButton();
+        bSButton = new JMyButton();
+        ansButton = new JMyButton();
+        resultButton = new JMyButton();
+    }
 }

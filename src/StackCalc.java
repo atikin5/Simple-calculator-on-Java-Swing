@@ -27,14 +27,30 @@ public class StackCalc {
         if (input == null || input.isEmpty()) {
             return "";
         }
+        parse(input);
+        if (argStack.size() == 1) {
+            ans = argStack.peek();
+            return returnNumber(argStack.pop());
+        }
+        throw new IllegalArgumentException("Illegal number of operations");
+    }
+
+    private void parse(String input) {
         boolean unaryMinus = true;
+        boolean bigSizeNumber = false;
         StringBuilder num = new StringBuilder();
         for (char c : input.toCharArray()) {
             if (c == ' ')
                 continue;
-            if (Character.isDigit(c) || c == '.') {
+            if (c == 'E') {
+                bigSizeNumber = true;
+                num.append(c);
+                continue;
+            }
+            if (Character.isDigit(c) || c == '.' || (c == '-' && bigSizeNumber)) {
                 num.append(c);
                 unaryMinus = false;
+                bigSizeNumber = false;
             } else {
                 if (!num.isEmpty()) {
                     if (num.charAt(num.length() - 1) == '.') {
@@ -78,11 +94,6 @@ public class StackCalc {
                 throw new IllegalArgumentException("Unclosed braces");
             operate();
         }
-        if (argStack.size() == 1) {
-            ans = argStack.peek();
-            return returnNumber(argStack.pop());
-        }
-        throw new IllegalArgumentException("Illegal number of operations");
     }
 
     private void operateMultiply(String op) {
@@ -113,26 +124,19 @@ public class StackCalc {
         double a = argStack.pop();
         double b = argStack.pop();
         String operation = opStack.pop();
-        argStack.push(applyOperation(operation, a, b));
-    }
-
-    private double applyOperation(String operation, double a, double b) {
-        switch (operation) {
-            case "+":
-                return b + a;
-            case "-":
-                return b - a;
-            case "*":
-                return b * a;
-            case "/":
+        double res = switch (operation) {
+            case "+" -> b + a;
+            case "-" -> b - a;
+            case "*" -> b * a;
+            case "/" -> {
                 if (a == 0.0)
                     throw new ArithmeticException("Division by zero");
-                return b / a;
-            case "^":
-                return Math.pow(b, a);
-            default:
-                throw new IllegalArgumentException("Illegal operation: " + operation);
-        }
+                yield b / a;
+            }
+            case "^" -> Math.pow(b, a);
+            default -> throw new IllegalArgumentException("Illegal operation: " + operation);
+        };
+        argStack.push(res);
     }
 
     public String getAns() {
