@@ -1,6 +1,4 @@
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Arrays;
@@ -9,8 +7,6 @@ import java.util.List;
 public class Calculator extends JFrame{
     private final StackCalc calc = new StackCalc();
     private JPanel panel;
-    private JPanel inputPanel;
-    private JPanel buttonPanel;
     private JTextField textField1;
     private JButton d0Button;
     private JButton d1Button;
@@ -78,31 +74,16 @@ public class Calculator extends JFrame{
         piButton.addKeyListener(keyListener);
         resultButton.addKeyListener(keyListener);
         dotButton.addKeyListener(keyListener);
+        lnButton.addKeyListener(keyListener);
+        lgButton.addKeyListener(keyListener);
+        tanButton.addKeyListener(keyListener);
+        cosButton.addKeyListener(keyListener);
+        sinButton.addKeyListener(keyListener);
 
-        bSButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                bS();
-            }
-        });
-        cButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                textField1.setText("");
-            }
-        });
-        resultButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                operate();
-            }
-        });
-        ansButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                click(calc.getAns());
-            }
-        });
+        bSButton.addActionListener(e -> bS());
+        cButton.addActionListener(e -> textField1.setText(""));
+        resultButton.addActionListener(e -> operate());
+        ansButton.addActionListener(e -> click(calc.getAns()));
 
         setVisible(true);
     }
@@ -113,7 +94,7 @@ public class Calculator extends JFrame{
             textField1.setText(res);
         } catch (Exception e1) {
             exception = true;
-            textField1.setText(e1.getMessage());
+            textField1.setText("Error: " + e1.getMessage());
         }
     }
 
@@ -146,6 +127,12 @@ public class Calculator extends JFrame{
 
         @Override
         public void keyPressed(KeyEvent e) {
+
+
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {
             if (exception) {
                 textField1.setText("");
                 exception = false;
@@ -156,12 +143,6 @@ public class Calculator extends JFrame{
             if (e.getKeyCode() == KeyEvent.VK_C) {
                 textField1.setText("");
             }
-
-        }
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-
         }
     };
 
@@ -199,23 +180,15 @@ public class Calculator extends JFrame{
 
     };
 
-    private class JMyButton extends JButton {
-        public JMyButton() {
-            super();
-            this.addKeyListener(keyListener);
-        }
+    private static class JMyButton extends JButton {
+
     }
 
     private class JSymbolsButton extends JMyButton {
         public JSymbolsButton(String symbols) {
             super();
             this.addKeyListener(keyListener);
-            this.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    click(symbols);
-                }
-            });
+            this.addActionListener(e -> click(symbols));
         }
     }
 
@@ -239,8 +212,13 @@ public class Calculator extends JFrame{
         minusButton = new JSymbolsButton("-");
         powButton = new JSymbolsButton("^");
         factorButton = new JSymbolsButton("!");
-        eButton = new JSymbolsButton("");
-        piButton = new JSymbolsButton("");
+        eButton = new JSymbolsButton("e");
+        piButton = new JSymbolsButton("π");
+        lnButton = new JSymbolsButton("ln");
+        lgButton = new JSymbolsButton("lg");
+        sinButton = new JSymbolsButton("sin");
+        cosButton = new JSymbolsButton("cos");
+        tanButton = new JSymbolsButton("tan");
         cButton = new JMyButton();
         bSButton = new JMyButton();
         ansButton = new JMyButton();
