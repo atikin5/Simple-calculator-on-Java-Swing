@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.text.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Arrays;
@@ -40,7 +42,7 @@ public class Calculator extends JFrame{
     private JButton eButton;
     private boolean exception = false;
 
-    private final List<Character> symbols = Arrays.asList('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '+', '-', '*', '/', '^', '!', '(', ')');
+    private final List<Character> symbols = Arrays.asList('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '+', '-', '*', '/', '^', '!', '(', ')', ' ', 'l', 'n', 'g', 't', 'a', 's', 'i', 'c', 'o');
 
     public Calculator() {
         setTitle("Calculator");
@@ -93,6 +95,7 @@ public class Calculator extends JFrame{
             String res = calc.calculate(textField1.getText());
             textField1.setText(res);
         } catch (Exception e1) {
+            calc.clear();
             exception = true;
             textField1.setText("Error: " + e1.getMessage());
         }
@@ -136,11 +139,12 @@ public class Calculator extends JFrame{
             if (exception) {
                 textField1.setText("");
                 exception = false;
+                return;
             }
             if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                 operate();
             }
-            if (e.getKeyCode() == KeyEvent.VK_C) {
+            if (e.getKeyCode() == KeyEvent.VK_R) {
                 textField1.setText("");
             }
         }
@@ -154,15 +158,16 @@ public class Calculator extends JFrame{
 
         @Override
         public void keyPressed(KeyEvent e) {
-            if (!exception && e.getKeyCode() == KeyEvent.VK_ENTER) {
-                operate();
-                return;
-            }
             if (exception) {
                 textField1.setText("");
                 exception = false;
+                return;
             }
-            if (e.getKeyCode() == KeyEvent.VK_C) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                operate();
+                return;
+            }
+            if (e.getKeyCode() == KeyEvent.VK_R) {
                 textField1.setText("");
             }
             if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
@@ -192,7 +197,55 @@ public class Calculator extends JFrame{
         }
     }
 
+    private class InputFilter extends DocumentFilter {
+
+
+        @Override
+        public void insertString(FilterBypass fb, int offset, String text, AttributeSet attributes)
+                throws BadLocationException
+        {
+            replace(fb, offset, 0, text, attributes);
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attributes)
+                throws BadLocationException
+        {
+
+            if (text == null)
+                text = "";
+
+            Document doc = fb.getDocument();
+            StringBuilder sb = new StringBuilder();
+            sb.append(doc.getText(0, doc.getLength()));
+            sb.replace(offset, offset + length, text);
+
+            if (validReplace(sb.toString()))
+                super.replace(fb, offset, length, text, attributes);
+            else
+                Toolkit.getDefaultToolkit().beep();
+        }
+
+        private boolean validReplace(String text)
+        {
+            if (exception)
+                return true;
+
+            if (text.isEmpty())
+                return true;
+
+            for (char c : text.toCharArray()) {
+                if (!symbols.contains(c))
+                    return false;
+            }
+            return true;
+        }
+    }
+
     private void createUIComponents() {
+        textField1 = new JTextField();
+        AbstractDocument doc = (AbstractDocument) textField1.getDocument();
+        doc.setDocumentFilter( new InputFilter() );
         openBraceButton = new JSymbolsButton("(");
         closeBraceButton = new JSymbolsButton(")");
         d0Button = new JSymbolsButton("0");

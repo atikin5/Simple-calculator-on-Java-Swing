@@ -14,19 +14,25 @@ public class StackCalc {
             "*", 4,
             "/", 4,
             "^", 4);
-    private final List<String> manySymbolsOperations = Arrays.asList("ln", "lg", "sin", "cos", "tan");
     private final List<String> unaryOperations = Arrays.asList("lg", "lg" ,"sin", "cos", "tan");
 
     public static void main(String[] args) {
         StackCalc calc = new StackCalc();
         Scanner sc = new Scanner(System.in);
         String input = sc.nextLine();
-
         System.out.println(calc.calculate(input));
     }
 
+    public void clear() {
+        argStack.clear();
+        opStack.clear();
+    }
+
     public String calculate(String input) {
-        if (input == null || input.isEmpty()) {
+        if (input == null) {
+            return "";
+        }
+        if (input.isEmpty()) {
             return "";
         }
         parse(input);
@@ -43,14 +49,18 @@ public class StackCalc {
         private boolean bigSizeNumber;
         private NumberBuilder() {
             number = new StringBuilder();
-            unaryMinus = false;
+            unaryMinus = true;
             bigSizeNumber = false;
         }
         private void add(char symbol) {
             number.append(symbol);
         }
         private double build() {
+            if (number.toString().startsWith("0") && !number.toString().startsWith("0.") && number.length() > 1) {
+                throw new IllegalArgumentException("Number can't start with zero:" + number);
+            }
             try {
+
                 unaryMinus = false;
                 bigSizeNumber = false;
                 double ans = Double.parseDouble(number.toString());
@@ -66,48 +76,77 @@ public class StackCalc {
         }
     }
 
+    private static class OperationBuilder{
+        private final List<String> manySymbolsOperations = Arrays.asList("ln", "lg", "sin", "cos", "tan");
+        private final StringBuilder op;
+        OperationBuilder() {
+            op = new StringBuilder();
+        }
+        private void add(char symbol) {
+            op.append(symbol);
+        }
+        private String build() {
+            String ans = op.toString();
+            op.setLength(0);
+            if (manySymbolsOperations.contains(ans)) {
+                return ans;
+            }
+            throw new IllegalArgumentException("Illegal operation: " + op);
+        }
+        private boolean isNotEmpty() {
+            return !op.isEmpty();
+        }
+    }
+
     private void parse(String input) {
-        NumberBuilder numberBuilder = new NumberBuilder();
-        StringBuilder op = new StringBuilder();
+        NumberBuilder numBuilder = new NumberBuilder();
+        OperationBuilder opBuilder = new OperationBuilder();
         for (char c : input.toCharArray()) {
-            if (c == ' ')
-                continue;
-            if (c == 'E') {
-                numberBuilder.bigSizeNumber = true;
-                numberBuilder.add(c);
+            if (c == ' ') {
+                if (numBuilder.isNotEmpty()) {
+                    argStack.push(numBuilder.build());
+                }
+                if (opBuilder.isNotEmpty()) {
+                    opStack.push(opBuilder.build());
+                }
                 continue;
             }
-            if (Character.isDigit(c) || c == '.' || (c == '-' && numberBuilder.bigSizeNumber)) {
-                numberBuilder.add(c);
-                numberBuilder.unaryMinus = false;
-                numberBuilder.bigSizeNumber = false;
+            if (c == 'E') {
+                numBuilder.bigSizeNumber = true;
+                numBuilder.add(c);
+                continue;
+            }
+            if (Character.isDigit(c) || c == '.' || (c == '-' && numBuilder.bigSizeNumber)) {
+                numBuilder.add(c);
+                numBuilder.unaryMinus = false;
+                numBuilder.bigSizeNumber = false;
             } else {
-                if (numberBuilder.isNotEmpty())
-                    argStack.push(numberBuilder.build());
+                if (numBuilder.isNotEmpty())
+                    argStack.push(numBuilder.build());
                 switch (c) {
                     case '-':
-                        if (numberBuilder.unaryMinus) {
+                        if (numBuilder.unaryMinus) {
                             argStack.push(-1.0);
                             operateMultiply("*");
-                            numberBuilder.unaryMinus = false;
+                            numBuilder.unaryMinus = false;
                         } else {
                             operateMultiply(String.valueOf(c));
                         }
                         break;
                     case '+', '*', '/', ')', '^':
-                        numberBuilder.unaryMinus = false;
+                        numBuilder.unaryMinus = false;
                         operateMultiply(String.valueOf(c));
                         break;
                     case '(':
-                        numberBuilder.unaryMinus = true;
+                        numBuilder.unaryMinus = true;
                         operateMultiply(String.valueOf(c));
                         break;
                     case 'π':
-                        numberBuilder.unaryMinus = false;
+                        numBuilder.unaryMinus = false;
                         argStack.push(Math.PI);
                         break;
                     case 'e':
-                        numberBuilder.unaryMinus = false;
+                        numBuilder.unaryMinus = false;
                         argStack.push(Math.E);
                         break;
                     default:
@@ -115,8 +154,11 @@ public class StackCalc {
                 }
             }
         }
-        if (numberBuilder.isNotEmpty()) {
-            argStack.push(numberBuilder.build());
+        if (numBuilder.isNotEmpty()) {
+            argStack.push(numBuilder.build());
+        }
+        if (opBuilder.isNotEmpty()) {
+            opStack.push(opBuilder.build());
         }
         while (!opStack.isEmpty()) {
             if (opStack.peek().equals("("))
@@ -126,7 +168,7 @@ public class StackCalc {
     }
 
     private void operateMultiply(String op) {
-        if (argStack.size() > 1 && !opStack.isEmpty()) {
+        if (!opStack.isEmpty()) {
             boolean operateNext = opPriorities.get(opStack.peek()) >= opPriorities.get(op);
             while (operateNext) {
                 operate();
@@ -154,7 +196,7 @@ public class StackCalc {
         if (argStack.isEmpty()) {
             throw new IllegalArgumentException("Not enough arguments");
         }
-        if (manySymbolsOperations.contains(operation)) {
+        if (unaryOperations.contains(operation)) {
             double a = argStack.pop();
             double res = switch (operation) {
                 case "㏑" -> {
